@@ -9,6 +9,7 @@ open class CleaningServiceApp
 fun main(args: Array<String>) {
     val ctx = runApplication<CleaningServiceApp>(*args)
 
+    println("🚀 Clean Connect backend starting...")
     println("🔍 Registered beans:")
     ctx.beanDefinitionNames
 //        .filter { it.contains("handleBooking", ignoreCase = true) }
