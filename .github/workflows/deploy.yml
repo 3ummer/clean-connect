@@ -37,13 +37,15 @@ jobs:
       - name: Build backend
         run: ./gradlew build
       
+      # Authenticate with Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      
       # Setup Google Cloud CLI
       - name: Setup Google Cloud CLI
         uses: google-github-actions/setup-gcloud@v1
-        with:
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-          project_id: clean-connect-a80a2
-          export_default_credentials: true
       
       # Deploy backend to Cloud Functions
       - name: Deploy backend to Cloud Functions
@@ -52,7 +54,7 @@ jobs:
             --source=. \
             --entry-point=org.springframework.cloud.function.adapter.gcp.GcfJarLauncher \
             --runtime=java17 \
-            --trigger=http \
+            --trigger-http \
             --allow-unauthenticated \
             --region=us-central1
       
