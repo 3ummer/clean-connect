@@ -31,13 +31,18 @@ const App = () => {
     setMessage('');
 
     try {
-      const res = await fetch('/booking', {
+      const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       });
-      const responseText = await res.text();
-      setMessage(responseText);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
+      const response = await res.json();
+      setMessage(response.message);
     } catch (error) {
       setMessage('Error submitting booking. Please try again.');
     } finally {

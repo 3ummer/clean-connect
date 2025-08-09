@@ -1,4 +1,4 @@
-name: Deploy Backend to GCP Cloud Functions
+name: Deploy Backend to Cloud Run
 
 on:
   push:
@@ -38,13 +38,13 @@ jobs:
       - name: Setup Google Cloud CLI
         uses: google-github-actions/setup-gcloud@v1
       
-      # Deploy backend to Cloud Functions
-      - name: Deploy backend to Cloud Functions
+      # Deploy backend to Cloud Run
+      - name: Deploy backend to Cloud Run
         run: |
-          gcloud functions deploy handleBooking \
+          gcloud run deploy clean-connect-backend \
             --source=. \
-            --entry-point=org.springframework.cloud.function.adapter.gcp.GcfJarLauncher \
-            --runtime=java17 \
-            --trigger-http \
+            --platform=managed \
+            --region=us-central1 \
             --allow-unauthenticated \
-            --region=us-central1
+            --port=8080 \
+            --memory=512Mi

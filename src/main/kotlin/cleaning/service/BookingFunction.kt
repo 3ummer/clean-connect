@@ -1,20 +1,22 @@
 package cleaning.service
+
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.cloud.FirestoreClient
 import okhttp3.OkHttpClient
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
 import java.io.FileInputStream
 import java.util.*
-import java.util.function.Function
 
-@Configuration
-class BookingFunctionConfig {
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = ["*"])
+class BookingController {
 
     init {
-        println("🔥 BookingFunctionConfig initialized")
+        println("🚀 BookingController initialized")
 //        val serviceAccount = FileInputStream("serviceAccountKey.json")
 //        val options = FirebaseOptions.builder()
 //            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -24,8 +26,8 @@ class BookingFunctionConfig {
 
     private val client = OkHttpClient()
 
-    @Bean
-    fun handleBooking(): Function<Booking, String> = Function { booking ->
+    @PostMapping("/bookings")
+    fun createBooking(@RequestBody booking: Booking): ResponseEntity<BookingResponse> {
 //        val db = FirestoreClient.getFirestore()
 //        val id = UUID.randomUUID().toString()
 //        val bookingMap = mapOf(
@@ -40,8 +42,32 @@ class BookingFunctionConfig {
 //        )
 //        db.collection("bookings").document(id).set(bookingMap)
 //        sendLineNotify(booking)
-        "Booking received. Awaiting approval."
+        
+        val id = UUID.randomUUID().toString()
+        return ResponseEntity.ok(BookingResponse(
+            id = id,
+            message = "Booking received. Awaiting approval.",
+            status = "pending"
+        ))
     }
+
+    @GetMapping("/bookings/{id}")
+    fun getBooking(@PathVariable id: String): ResponseEntity<BookingResponse> {
+        return ResponseEntity.ok(BookingResponse(
+            id = id,
+            message = "Booking details",
+            status = "pending"
+        ))
+    }
+
+    @GetMapping("/health")
+    fun health(): ResponseEntity<Map<String, String>> {
+        return ResponseEntity.ok(mapOf(
+            "status" to "UP",
+            "service" to "Clean Connect Backend"
+        ))
+    }
+
 //    private fun sendLineNotify(booking: Booking) {
 //        val token = System.getenv("LINE_NOTIFY_TOKEN") ?: return
 //        val message = "\uD83D\uDCE2 New booking from ${booking.name} on ${booking.dateTime}."
@@ -62,4 +88,10 @@ data class Booking(
     val dateTime: String,
     val cleaningType: String,
     val notes: String?
+)
+
+data class BookingResponse(
+    val id: String,
+    val message: String,
+    val status: String
 )

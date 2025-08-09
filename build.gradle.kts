@@ -19,29 +19,17 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework.cloud:spring-cloud-function-kotlin")
-    implementation("org.springframework.cloud:spring-cloud-function-adapter-gcp")
-    implementation("org.springframework.cloud:spring-cloud-starter-function-web")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.google.firebase:firebase-admin:9.2.0")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
     implementation(kotlin("stdlib"))
 
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation(kotlin("test"))
 }
 
-tasks.withType<Jar> {
-    manifest {
-        attributes["Main-Class"] = "org.springframework.cloud.function.adapter.gcp.GcfJarLauncher"
-    }
-
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    from(
-        configurations.runtimeClasspath.get().map {
-            if (it.isDirectory) it else zipTree(it)
-        }
-    )
+tasks.test {
+    useJUnitPlatform()
 }
