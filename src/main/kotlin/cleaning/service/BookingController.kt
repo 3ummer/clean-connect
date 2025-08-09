@@ -1,13 +1,10 @@
 package cleaning.service
 
-import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
-import com.google.firebase.FirebaseOptions
 import com.google.firebase.cloud.FirestoreClient
 import okhttp3.OkHttpClient
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.io.FileInputStream
 import java.util.*
 
 @RestController
@@ -18,13 +15,10 @@ class BookingController {
     init {
         println("🚀 BookingController initialized")
         
-        // Initialize Firebase using Application Default Credentials (from Cloud Run)
+        // Initialize Firebase (required for Firestore access)
         if (FirebaseApp.getApps().isEmpty()) {
-            val options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.getApplicationDefault())
-                .build()
-            FirebaseApp.initializeApp(options)
-            println("✅ Firebase initialized with Application Default Credentials")
+            FirebaseApp.initializeApp() // Uses Application Default Credentials automatically
+            println("✅ Firebase initialized")
         }
     }
 

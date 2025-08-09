@@ -27,28 +27,45 @@ const App = () => {
 
   const handleSubmit = async e => {
     e.preventDefault();
+    console.log('🚀 Form submission started');
+    console.log('📋 Form data:', form);
+    
     setIsLoading(true);
     setMessage('');
 
     try {
       // Use environment variable or fallback to relative URL for local dev
       const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
+      console.log('🌐 API_BASE_URL:', API_BASE_URL);
       
-      const res = await fetch(`${API_BASE_URL}/bookings`, {
+      const requestUrl = `${API_BASE_URL}/bookings`;
+      console.log('📡 Making request to:', requestUrl);
+      console.log('📦 Request payload:', JSON.stringify(form, null, 2));
+      
+      const res = await fetch(requestUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       });
       
+      console.log('📨 Response status:', res.status);
+      console.log('📨 Response ok:', res.ok);
+      
       if (!res.ok) {
+        console.error('❌ HTTP error! status:', res.status);
         throw new Error(`HTTP error! status: ${res.status}`);
       }
       
       const response = await res.json();
+      console.log('✅ Response data:', response);
       setMessage(response.message);
     } catch (error) {
+      console.error('❌ Error in handleSubmit:', error);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error stack:', error.stack);
       setMessage('Error submitting booking. Please try again.');
     } finally {
+      console.log('🏁 Form submission finished, setting loading to false');
       setIsLoading(false);
     }
   };
