@@ -1,0 +1,38 @@
+# Build outputs
+build/
+target/
+*.jar
+*.war
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Version control
+.git/
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Frontend files (not needed for backend container)
+frontend/
+
+# GitHub Actions
+.github/
+
+# Firebase
+.firebaserc
+firebase.json
+.firebase/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

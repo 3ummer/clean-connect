@@ -9,6 +9,7 @@ on:
       - 'build.gradle.kts'
       - 'gradle.properties'
       - 'settings.gradle.kts'
+      - 'Dockerfile'
       - '.github/workflows/deploy-backend.yml'
 
 jobs:
@@ -24,10 +25,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       
-      # Build backend
-      - name: Build backend
-        run: ./gradlew build
-      
       # Authenticate with Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
@@ -38,11 +35,25 @@ jobs:
       - name: Setup Google Cloud CLI
         uses: google-github-actions/setup-gcloud@v1
       
-      # Deploy backend to Cloud Run
-      - name: Deploy backend to Cloud Run
+      # Configure Docker for GCP
+      - name: Configure Docker
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      
+      # Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t us-central1-docker.pkg.dev/clean-connect-a80a2/cloud-run-source-deploy/clean-connect-backend .
+      
+      # Push Docker image
+      - name: Push Docker image
+        run: |
+          docker push us-central1-docker.pkg.dev/clean-connect-a80a2/cloud-run-source-deploy/clean-connect-backend
+      
+      # Deploy to Cloud Run
+      - name: Deploy to Cloud Run
         run: |
           gcloud run deploy clean-connect-backend \
-            --source=. \
+            --image=us-central1-docker.pkg.dev/clean-connect-a80a2/cloud-run-source-deploy/clean-connect-backend \
             --platform=managed \
             --region=us-central1 \
             --allow-unauthenticated \
