@@ -31,7 +31,10 @@ const App = () => {
     setMessage('');
 
     try {
-      const res = await fetch('/api/bookings', {
+      // Use environment variable or fallback to relative URL for local dev
+      const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
+      
+      const res = await fetch(`${API_BASE_URL}/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
