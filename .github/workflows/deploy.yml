@@ -1,4 +1,4 @@
-name: Deploy Frontend to Firebase
+name: Deploy Full-Stack to Firebase & GCP
 
 on:
   push:
@@ -10,15 +10,54 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Node
+      
+      # Setup Node.js for frontend
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install
+      
+      # Setup Java for backend
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      # Build frontend
+      - name: Install frontend dependencies
+        run: npm install
         working-directory: ./frontend
-      - run: npm run build
+      
+      - name: Build frontend
+        run: npm run build
         working-directory: ./frontend
-      - name: Deploy to Firebase
+      
+      # Build backend
+      - name: Build backend
+        run: ./gradlew build
+      
+      # Setup Google Cloud CLI
+      - name: Setup Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          project_id: clean-connect-a80a2
+          export_default_credentials: true
+      
+      # Deploy backend to Cloud Functions
+      - name: Deploy backend to Cloud Functions
+        run: |
+          gcloud functions deploy handleBooking \
+            --source=. \
+            --entry-point=org.springframework.cloud.function.adapter.gcp.GcfJarLauncher \
+            --runtime=java17 \
+            --trigger=http \
+            --allow-unauthenticated \
+            --region=us-central1
+      
+      # Deploy frontend to Firebase
+      - name: Deploy frontend to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
