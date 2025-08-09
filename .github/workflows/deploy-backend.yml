@@ -67,4 +67,4 @@ jobs:
             --allow-unauthenticated \
             --port=8080 \
             --memory=512Mi \
-            --service-account=github-actions@clean-connect-a80a2.iam.gserviceaccount.com
+            --service-account=clean-connect-app@clean-connect-a80a2.iam.gserviceaccount.com

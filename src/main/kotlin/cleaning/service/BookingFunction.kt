@@ -17,54 +17,116 @@ class BookingController {
 
     init {
         println("🚀 BookingController initialized")
-//        val serviceAccount = FileInputStream("serviceAccountKey.json")
-//        val options = FirebaseOptions.builder()
-//            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-//            .build()
-//        FirebaseApp.initializeApp(options)
+        
+        // Initialize Firebase using Application Default Credentials (from Cloud Run)
+        if (FirebaseApp.getApps().isEmpty()) {
+            val options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.getApplicationDefault())
+                .build()
+            FirebaseApp.initializeApp(options)
+            println("✅ Firebase initialized with Application Default Credentials")
+        }
     }
 
     private val client = OkHttpClient()
 
     @PostMapping("/bookings")
     fun createBooking(@RequestBody booking: Booking): ResponseEntity<BookingResponse> {
-//        val db = FirestoreClient.getFirestore()
-//        val id = UUID.randomUUID().toString()
-//        val bookingMap = mapOf(
-//            "id" to id,
-//            "name" to booking.name,
-//            "phone" to booking.phone,
-//            "address" to booking.address,
-//            "dateTime" to booking.dateTime,
-//            "cleaningType" to booking.cleaningType,
-//            "notes" to booking.notes,
-//            "status" to "pending"
-//        )
-//        db.collection("bookings").document(id).set(bookingMap)
-//        sendLineNotify(booking)
-        
-        val id = UUID.randomUUID().toString()
-        return ResponseEntity.ok(BookingResponse(
-            id = id,
-            message = "Booking received. Awaiting approval.",
-            status = "pending"
-        ))
+        return try {
+            val db = FirestoreClient.getFirestore()
+            val id = UUID.randomUUID().toString()
+            
+            val bookingData = mapOf(
+                "id" to id,
+                "name" to booking.name,
+                "phone" to booking.phone,
+                "address" to booking.address,
+                "dateTime" to booking.dateTime,
+                "cleaningType" to booking.cleaningType,
+                "notes" to booking.notes,
+                "status" to "pending",
+                "createdAt" to System.currentTimeMillis(),
+                "updatedAt" to System.currentTimeMillis()
+            )
+            
+            // Store in Firestore
+            db.collection("bookings").document(id).set(bookingData).get()
+            println("✅ Booking saved with ID: $id")
+            
+            // TODO: Send notification
+            // sendLineNotify(booking)
+            
+            ResponseEntity.ok(BookingResponse(
+                id = id,
+                message = "Booking received and saved! We'll contact you soon.",
+                status = "pending"
+            ))
+        } catch (e: Exception) {
+            println("❌ Error saving booking: ${e.message}")
+            ResponseEntity.status(500).body(BookingResponse(
+                id = "",
+                message = "Error processing booking. Please try again.",
+                status = "error"
+            ))
+        }
     }
 
     @GetMapping("/bookings/{id}")
     fun getBooking(@PathVariable id: String): ResponseEntity<BookingResponse> {
-        return ResponseEntity.ok(BookingResponse(
-            id = id,
-            message = "Booking details",
-            status = "pending"
-        ))
+        return try {
+            val db = FirestoreClient.getFirestore()
+            val document = db.collection("bookings").document(id).get().get()
+            
+            if (document.exists()) {
+                val data = document.data
+                ResponseEntity.ok(BookingResponse(
+                    id = id,
+                    message = "Booking found: ${data?.get("name")} - ${data?.get("cleaningType")}",
+                    status = data?.get("status").toString()
+                ))
+            } else {
+                ResponseEntity.status(404).body(BookingResponse(
+                    id = id,
+                    message = "Booking not found",
+                    status = "not_found"
+                ))
+            }
+        } catch (e: Exception) {
+            println("❌ Error retrieving booking $id: ${e.message}")
+            ResponseEntity.status(500).body(BookingResponse(
+                id = id,
+                message = "Error retrieving booking",
+                status = "error"
+            ))
+        }
+    }
+
+    @GetMapping("/bookings")
+    fun getAllBookings(): ResponseEntity<List<Map<String, Any?>>> {
+        return try {
+            val db = FirestoreClient.getFirestore()
+            val querySnapshot = db.collection("bookings")
+                .orderBy("createdAt")
+                .get()
+                .get()
+            
+            val bookings = querySnapshot.documents.map { document ->
+                document.data?.plus("id" to document.id) ?: mapOf("id" to document.id)
+            }
+            
+            ResponseEntity.ok(bookings)
+        } catch (e: Exception) {
+            println("❌ Error retrieving bookings: ${e.message}")
+            ResponseEntity.status(500).body(emptyList())
+        }
     }
 
     @GetMapping("/health")
     fun health(): ResponseEntity<Map<String, String>> {
         return ResponseEntity.ok(mapOf(
             "status" to "UP",
-            "service" to "Clean Connect Backend"
+            "service" to "Clean Connect Backend",
+            "database" to "Firestore Connected"
         ))
     }
 
