@@ -35,6 +35,14 @@ jobs:
       - name: Setup Google Cloud CLI
         uses: google-github-actions/setup-gcloud@v1
       
+      # Create Artifact Registry repository (if not exists)
+      - name: Create Artifact Registry repository
+        run: |
+          gcloud artifacts repositories create clean-connect-repo \
+            --repository-format=docker \
+            --location=us-central1 \
+            --description="Clean Connect Docker repository" || true
+      
       # Configure Docker for GCP
       - name: Configure Docker
         run: gcloud auth configure-docker us-central1-docker.pkg.dev
@@ -42,18 +50,18 @@ jobs:
       # Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t us-central1-docker.pkg.dev/clean-connect-a80a2/cloud-run-source-deploy/clean-connect-backend .
+          docker build -t us-central1-docker.pkg.dev/clean-connect-a80a2/clean-connect-repo/clean-connect-backend .
       
       # Push Docker image
       - name: Push Docker image
         run: |
-          docker push us-central1-docker.pkg.dev/clean-connect-a80a2/cloud-run-source-deploy/clean-connect-backend
+          docker push us-central1-docker.pkg.dev/clean-connect-a80a2/clean-connect-repo/clean-connect-backend
       
       # Deploy to Cloud Run
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy clean-connect-backend \
-            --image=us-central1-docker.pkg.dev/clean-connect-a80a2/cloud-run-source-deploy/clean-connect-backend \
+            --image=us-central1-docker.pkg.dev/clean-connect-a80a2/clean-connect-repo/clean-connect-backend \
             --platform=managed \
             --region=us-central1 \
             --allow-unauthenticated \
