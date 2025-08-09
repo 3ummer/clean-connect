@@ -1,0 +1,50 @@
+name: Deploy Backend to GCP Cloud Functions
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'build.gradle.kts'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - '.github/workflows/deploy-backend.yml'
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      # Setup Java for backend
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      # Build backend
+      - name: Build backend
+        run: ./gradlew build
+      
+      # Authenticate with Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      
+      # Setup Google Cloud CLI
+      - name: Setup Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+      
+      # Deploy backend to Cloud Functions
+      - name: Deploy backend to Cloud Functions
+        run: |
+          gcloud functions deploy handleBooking \
+            --source=. \
+            --entry-point=org.springframework.cloud.function.adapter.gcp.GcfJarLauncher \
+            --runtime=java17 \
+            --trigger-http \
+            --allow-unauthenticated \
+            --region=us-central1
