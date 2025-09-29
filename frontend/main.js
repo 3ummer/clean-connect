@@ -11,10 +11,10 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const serviceTypes = [
-    { value: 'standard', label: 'Standard Cleaning', icon: '🧹' },
-    { value: 'deep', label: 'Deep Cleaning', icon: '✨' },
-    { value: 'move-in', label: 'Move In/Out', icon: '📦' },
-    { value: 'post-construction', label: 'Post Construction', icon: '🏗️' }
+    { value: 'standard', label: '基礎清潔', icon: '🧹' },
+    { value: 'deep', label: '深度清潔', icon: '✨' },
+    { value: 'move-in', label: '搬家清潔', icon: '📦' },
+    { value: 'post-construction', label: '裝潢後清潔', icon: '🏗️' }
   ];
 
   const handleChange = e => {
@@ -34,8 +34,8 @@ const App = () => {
     setMessage('');
 
     try {
-      // Use environment variable or fallback to relative URL for local dev
-      const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
+      // Use /api which gets rewritten to Cloud Run by Firebase hosting
+      const API_BASE_URL = '/api';
       console.log('🌐 API_BASE_URL:', API_BASE_URL);
       
       const requestUrl = `${API_BASE_URL}/bookings`;
@@ -63,7 +63,7 @@ const App = () => {
       console.error('❌ Error in handleSubmit:', error);
       console.error('❌ Error message:', error.message);
       console.error('❌ Error stack:', error.stack);
-      setMessage('Error submitting booking. Please try again.');
+      setMessage('提交預約時發生錯誤，請稍後再試。');
     } finally {
       console.log('🏁 Form submission finished, setting loading to false');
       setIsLoading(false);
@@ -73,54 +73,54 @@ const App = () => {
   return (
     <div className="container">
       <header className="header">
-        <h1>Clean Connect</h1>
-        <p>Professional cleaning services at your fingertips</p>
+        <h1>潔淨管家</h1>
+        <p>專業居家清潔服務，讓您的家煥然一新</p>
       </header>
 
       <div className="form-card">
         <form onSubmit={handleSubmit} className="booking-form">
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">Full Name</label>
+              <label className="form-label">姓名</label>
               <input
                 type="text"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="Enter your full name"
+                placeholder="請輸入您的姓名"
                 required
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Phone Number</label>
+              <label className="form-label">聯絡電話</label>
               <input
                 type="tel"
                 name="phone"
                 value={form.phone}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="(555) 123-4567"
+                placeholder="09XX-XXX-XXX"
                 required
               />
             </div>
           </div>
 
           <div className="form-group">
-            <label className="form-label">Service Address</label>
+            <label className="form-label">服務地址</label>
             <input
               type="text"
               name="address"
               value={form.address}
               onChange={handleChange}
               className="form-input"
-              placeholder="123 Main St, City, State 12345"
+              placeholder="台北市大安區忠孝東路四段XXX號"
               required
             />
           </div>
 
           <div className="form-group">
-            <label className="form-label">Preferred Date & Time</label>
+            <label className="form-label">預約日期與時間</label>
             <input
               type="datetime-local"
               name="dateTime"
@@ -132,7 +132,7 @@ const App = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Cleaning Service Type</label>
+            <label className="form-label">清潔服務類型</label>
             <div className="service-types">
               {serviceTypes.map(service => (
                 <div
@@ -148,27 +148,27 @@ const App = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Additional Notes (Optional)</label>
+            <label className="form-label">備註事項（選填）</label>
             <textarea
               name="notes"
               value={form.notes}
               onChange={handleChange}
               className="form-textarea"
-              placeholder="Any special instructions or requests..."
+              placeholder="如有特殊需求或注意事項，請在此說明..."
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className={`submit-btn ${isLoading ? 'loading' : ''}`}
             disabled={isLoading}
           >
-            {isLoading ? 'Booking...' : 'Book My Cleaning'}
+            {isLoading ? '預約中...' : '立即預約清潔服務'}
           </button>
         </form>
 
         {message && (
-          <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
+          <div className={`message ${message.includes('錯誤') || message.includes('Error') ? 'error' : 'success'}`}>
             {message}
           </div>
         )}
